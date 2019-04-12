@@ -20,6 +20,7 @@ func withValidation(next http.HandlerFunc) http.HandlerFunc {
 
 		if token == "" || validateToken(client, token) != nil {
 			w.WriteHeader(http.StatusUnauthorized)
+			w.Header().Set("content-type", "text/plain")
 			fmt.Fprintf(w, "401 Unauthorized")
 			return
 		}
