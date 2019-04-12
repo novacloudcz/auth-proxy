@@ -16,13 +16,17 @@ func withValidation(next http.HandlerFunc) http.HandlerFunc {
 		panic(err)
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		token := tokenFromRequest(r)
 
-		if token == "" || validateToken(client, token) != nil {
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Header().Set("content-type", "text/plain")
-			fmt.Fprintf(w, "401 Unauthorized")
-			return
+		if r.Method != "OPTIONS" {
+
+			token := tokenFromRequest(r)
+
+			if token == "" || validateToken(client, token) != nil {
+				w.WriteHeader(http.StatusUnauthorized)
+				w.Header().Set("content-type", "text/plain")
+				fmt.Fprintf(w, "401 Unauthorized")
+				return
+			}
 		}
 
 		next.ServeHTTP(w, r)
