@@ -8,6 +8,8 @@ FROM alpine:3.5
 
 WORKDIR /app
 
+RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
+
 COPY --from=builder /tmp/app /usr/local/bin/app
 
 # RUN apk --update add docker
