@@ -21,16 +21,18 @@ func main() {
 		panic(err)
 	}
 
+	mux := http.NewServeMux()
+
 	proxy := httputil.NewSingleHostReverseProxy(proxyURL)
-	http.HandleFunc("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
 	})
 
-	http.HandleFunc("/", withValidation(func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", withValidation(func(w http.ResponseWriter, r *http.Request) {
 		proxy.ServeHTTP(w, r)
 	}))
 
-	log.Fatal(http.ListenAndServe(":"+getEnv("PORT", "80"), nil))
+	log.Fatal(http.ListenAndServe(":"+getEnv("PORT", "80"), mux))
 }
 
 // Get env var or default

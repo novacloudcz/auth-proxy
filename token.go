@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/rs/cors"
 
 	"github.com/jakubknejzlik/go-jwks"
 )
@@ -15,6 +16,7 @@ func withValidation(next http.HandlerFunc) http.HandlerFunc {
 	if err != nil {
 		panic(err)
 	}
+	corsHandler := cors.AllowAll()
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		if r.Method != "OPTIONS" {
@@ -22,9 +24,11 @@ func withValidation(next http.HandlerFunc) http.HandlerFunc {
 			token := tokenFromRequest(r)
 
 			if token == "" || validateToken(client, token) != nil {
-				w.WriteHeader(http.StatusUnauthorized)
-				w.Header().Set("content-type", "text/plain")
-				fmt.Fprintf(w, "401 Unauthorized")
+				corsHandler.ServeHTTP(w, r, func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusUnauthorized)
+					w.Header().Set("content-type", "text/plain")
+					fmt.Fprintf(w, "401 Unauthorized")
+				})
 				return
 			}
 		}
