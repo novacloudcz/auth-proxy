@@ -40,7 +40,7 @@ deploy-local:
 	mv app /usr/local/bin/${IMAGE_NAME}
 
 run:
-	make build-local && PROXY_URL=https://admin.novato.cz/ JWKS_PROVIDER_URL=https://id.novacloud.cz/.well-known/jwks.json PORT=8080 ./app
+	make build-local && REQUIRED_JWT_SCOPES="test aa" PROXY_URL=http://example.com/ JWKS_PROVIDER_URL=https://id.novacloud.cz/.well-known/jwks.json PORT=8080 ./app
 
 # test:
 # 	DATABASE_URL=sqlite3://test.db $(IMAGE_NAME) server -p 8005

@@ -7,19 +7,15 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"strings"
 )
 
 func main() {
 	// testGQL()
 
-	proxyURLString := os.Getenv("PROXY_URL")
-	if proxyURLString == "" {
-		panic(fmt.Errorf("Missing PROXY_URL environment variable"))
-	}
-	proxyURL, err := url.Parse(proxyURLString)
-	if err != nil {
-		panic(err)
-	}
+	proxyURL := getEnvURL("PROXY_URL")
+	jwksProviderURL := getEnv("JWKS_PROVIDER_URL")
+	requiredJWTScopes := getEnvWithFallback("REQUIRED_JWT_SCOPES", "")
 
 	mux := http.NewServeMux()
 
@@ -28,17 +24,40 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
+	scopesArray := []string{}
+	if requiredJWTScopes != "" {
+		scopesArray = strings.Split(requiredJWTScopes, " ")
+	}
+	vOptions := ValidationOptions{
+		jwksProviderURL:   jwksProviderURL,
+		requiredJWTScopes: scopesArray,
+	}
 	mux.HandleFunc("/", withValidation(func(w http.ResponseWriter, r *http.Request) {
 		proxy.ServeHTTP(w, r)
-	}))
+	}, vOptions))
 
-	log.Fatal(http.ListenAndServe(":"+getEnv("PORT", "80"), mux))
+	log.Fatal(http.ListenAndServe(":"+getEnvWithFallback("PORT", "80"), mux))
 }
 
 // Get env var or default
-func getEnv(key, fallback string) string {
+func getEnvWithFallback(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
 	}
 	return fallback
+}
+
+func getEnv(key string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	panic(fmt.Errorf("Missing %s environment variable", key))
+}
+
+func getEnvURL(key string) *url.URL {
+	url, err := url.Parse(getEnv(key))
+	if err != nil {
+		panic(err)
+	}
+	return url
 }
