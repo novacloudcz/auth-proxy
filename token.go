@@ -100,9 +100,10 @@ func validateToken(client *jwks.Client, token string) (valid bool, claims JWTTok
 
 func validateRequiredJWTScopes(claims JWTTokenClaims, scopes []string) bool {
 	tokenScopes := map[string]struct{}{}
-	// for _, s := range strings.Split(claims.Scope, " ") {
-	// 	tokenScopes[s] = struct{}{}
-	// }
+
+	for _, s := range strings.Split(claims.Scope, " ") {
+		tokenScopes[s] = struct{}{}
+	}
 
 	for _, s := range scopes {
 		_, contains := tokenScopes[s]
