@@ -51,8 +51,8 @@ func withValidation(next http.HandlerFunc, options ValidationOptions) http.Handl
 					w.WriteHeader(http.StatusForbidden)
 					w.Header().Set("content-type", "text/plain")
 					fmt.Fprintf(w, "403 Missing required scope(s)")
+					return
 				}
-				return
 			}
 		}
 
