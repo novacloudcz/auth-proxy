@@ -38,6 +38,7 @@ func main() {
 		q.Del("access_token")
 		r.URL.RawQuery = q.Encode()
 		r.Host = proxyURL.Host
+		fmt.Println("forwarding", r.Host, r.URL.String())
 		proxy.ServeHTTP(w, r)
 	}, vOptions))
 

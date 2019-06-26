@@ -1,4 +1,4 @@
-OWNER=graphql
+OWNER=novacloud
 IMAGE_NAME=auth-proxy
 QNAME=$(OWNER)/$(IMAGE_NAME)
 
