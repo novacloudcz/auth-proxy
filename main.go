@@ -33,10 +33,17 @@ func main() {
 		requiredJWTScopes: scopesArray,
 	}
 	mux.HandleFunc("/", withValidation(func(w http.ResponseWriter, r *http.Request) {
+		r.Header.Del("authorization")
+		q := r.URL.Query()
+		q.Del("access_token")
+		r.URL.RawQuery = q.Encode()
+		r.Host = proxyURL.Host
 		proxy.ServeHTTP(w, r)
 	}, vOptions))
 
-	log.Fatal(http.ListenAndServe(":"+getEnvWithFallback("PORT", "80"), mux))
+	port := getEnvWithFallback("PORT", "80")
+	log.Printf("running at http://localhost:%s", port)
+	log.Fatal(http.ListenAndServe(":"+port, mux))
 }
 
 // Get env var or default
