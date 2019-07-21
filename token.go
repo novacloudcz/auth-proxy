@@ -75,24 +75,26 @@ func validateToken(client *jwks.Client, token string) (valid bool, claims JWTTok
 	if token == "" {
 		return
 	}
-	keys, err := client.GetKeys()
+	jwtToken, err := jwt.ParseWithClaims(token, &claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		kid, ok := token.Header["kid"].(string)
+		if !ok || kid == "" {
+			return nil, fmt.Errorf("Token is missing kid field in headers")
+		}
+		key, err := client.GetKey(kid)
+		if err != nil {
+			return nil, err
+		}
+		return key, nil
+	})
 	if err != nil {
 		return
 	}
-	for _, key := range keys {
-		jwtToken, parseErr := jwt.ParseWithClaims(token, &claims, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-			}
-			return key, nil
-		})
-		if parseErr == nil {
-			err = parseErr
-			if jwtToken != nil {
-				valid = jwtToken.Valid
-			}
-			return
-		}
+	if jwtToken != nil {
+		valid = jwtToken.Valid
 	}
 
 	return
