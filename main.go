@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-	// testGQL()
 
 	proxyURL := getEnvURL("PROXY_URL")
 	jwksProviderURL := getEnv("JWKS_PROVIDER_URL")
