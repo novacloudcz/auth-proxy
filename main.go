@@ -19,9 +19,6 @@ func main() {
 	mux := http.NewServeMux()
 
 	proxy := httputil.NewSingleHostReverseProxy(proxyURL)
-	mux.HandleFunc("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("OK"))
-	})
 
 	scopesArray := []string{}
 	if requiredJWTScopes != "" {
@@ -32,6 +29,9 @@ func main() {
 		requiredJWTScopes: scopesArray,
 	}
 	mux.HandleFunc("/", withValidation(func(w http.ResponseWriter, r *http.Request) {
+		if os.Getenv("DEBUG") != "" {
+			log.Println("Request", r.URL.Path, "authorization:", r.Header.Get("authorization"))
+		}
 		r.Header.Del("authorization")
 		q := r.URL.Query()
 		q.Del("access_token")
