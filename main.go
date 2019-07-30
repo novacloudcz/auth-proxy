@@ -19,6 +19,9 @@ func main() {
 	mux := http.NewServeMux()
 
 	proxy := httputil.NewSingleHostReverseProxy(proxyURL)
+	mux.HandleFunc("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("OK"))
+	})
 
 	scopesArray := []string{}
 	if requiredJWTScopes != "" {
