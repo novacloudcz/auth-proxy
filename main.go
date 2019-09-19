@@ -15,7 +15,7 @@ func main() {
 	proxyURL := getEnvURL("PROXY_URL")
 	jwksProviderURL := getEnv("JWKS_PROVIDER_URL")
 	requiredJWTScopes := getEnvWithFallback("REQUIRED_JWT_SCOPES", "")
-	disableAuthorizationForwarding := getEnv("NO_AUTHORIZATION_FORWARDING") == "true"
+	disableAuthorizationForwarding := getEnvWithFallback("NO_AUTHORIZATION_FORWARDING", "") == "true"
 
 	mux := http.NewServeMux()
 
