@@ -5,6 +5,7 @@ Authorization proxy for GraphQL server. JWT is expected as access token and JWKs
 - `PROXY_URL` – URL of server for proxying valid requests
 - `JWKS_PROVIDER_URL` – JWKs endpoint (eg. `https://example.com/.well-known/jwks.json`)
 - `REQUIRED_JWT_SCOPES` – space-separated list of scopes required to be present in JWT access token
+- `NO_AUTHORIZATION_FORWARDING` - disable forwarding of `Authorization` header (default: "false")
 
 # Token scopes
 

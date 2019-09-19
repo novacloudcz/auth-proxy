@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -44,6 +46,10 @@ func withValidation(next http.HandlerFunc, options ValidationOptions) http.Handl
 					fmt.Fprintf(w, "401 Unauthorized")
 				})
 				return
+			}
+
+			if os.Getenv("DEBUG") != "" {
+				log.Println("Parsed token with subject", claims.Subject, claims.Issuer)
 			}
 
 			if validateScopes {

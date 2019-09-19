@@ -11,11 +11,11 @@ import (
 )
 
 func main() {
-	// testGQL()
 
 	proxyURL := getEnvURL("PROXY_URL")
 	jwksProviderURL := getEnv("JWKS_PROVIDER_URL")
 	requiredJWTScopes := getEnvWithFallback("REQUIRED_JWT_SCOPES", "")
+	disableAuthorizationForwarding := getEnv("NO_AUTHORIZATION_FORWARDING") == "true"
 
 	mux := http.NewServeMux()
 
@@ -33,10 +33,15 @@ func main() {
 		requiredJWTScopes: scopesArray,
 	}
 	mux.HandleFunc("/", withValidation(func(w http.ResponseWriter, r *http.Request) {
-		r.Header.Del("authorization")
-		q := r.URL.Query()
-		q.Del("access_token")
-		r.URL.RawQuery = q.Encode()
+		if os.Getenv("DEBUG") != "" {
+			log.Println("Request", r.URL.Path, "authorization:", r.Header.Get("authorization"))
+		}
+		if disableAuthorizationForwarding {
+			r.Header.Del("authorization")
+			q := r.URL.Query()
+			q.Del("access_token")
+			r.URL.RawQuery = q.Encode()
+		}
 		r.Host = proxyURL.Host
 		proxy.ServeHTTP(w, r)
 	}, vOptions))
