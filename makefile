@@ -2,9 +2,9 @@ OWNER=novacloud
 IMAGE_NAME=auth-proxy
 QNAME=$(OWNER)/$(IMAGE_NAME)
 
-GIT_TAG=$(QNAME):$(TRAVIS_COMMIT)
-BUILD_TAG=$(QNAME):$(TRAVIS_BUILD_NUMBER).$(TRAVIS_COMMIT)
-TAG=$(QNAME):`echo $(TRAVIS_BRANCH) | sed 's/master/latest/;s/develop/unstable/'`
+GIT_TAG=$(QNAME):$(GITHUB_SHA)
+BUILD_TAG=$(QNAME):$(GITHUB_RUN_ID).$(GITHUB_SHA)
+TAG=$(QNAME):`echo $(GITHUB_REF) | sed 's/refs\/heads\///' | sed 's/master/latest/;s/develop/unstable/'`
 
 lint:
 	docker run -it --rm -v "$(PWD)/Dockerfile:/Dockerfile:ro" redcoolbeans/dockerlint
