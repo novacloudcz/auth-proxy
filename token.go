@@ -15,13 +15,15 @@ import (
 
 type JWTTokenClaims struct {
 	jwt.StandardClaims
-	Scope string `json:"scope,omitempty"`
+	Scope string   `json:"scope,omitempty"`
+	Roles []string `json:"roles,omitempty"`
 }
 
 // ValidationOptions ...
 type ValidationOptions struct {
 	jwksProviderURL   string //"https://id.novacloud.cz/.well-known/jwks.json"
 	requiredJWTScopes []string
+	requiredJWTRoles  []string
 }
 
 func withValidation(next http.HandlerFunc, options ValidationOptions) http.HandlerFunc {
@@ -31,6 +33,7 @@ func withValidation(next http.HandlerFunc, options ValidationOptions) http.Handl
 	}
 	corsHandler := cors.AllowAll()
 	validateScopes := len(options.requiredJWTScopes) > 0
+	validateRoles := len(options.requiredJWTRoles) > 0
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -54,6 +57,15 @@ func withValidation(next http.HandlerFunc, options ValidationOptions) http.Handl
 
 			if validateScopes {
 				if !validateRequiredJWTScopes(claims, options.requiredJWTScopes) {
+					w.WriteHeader(http.StatusForbidden)
+					w.Header().Set("content-type", "text/plain")
+					fmt.Fprintf(w, "403 Missing required scope(s)")
+					return
+				}
+			}
+
+			if validateRoles {
+				if !validateRequiredJWTRoles(claims, options.requiredJWTRoles) {
 					w.WriteHeader(http.StatusForbidden)
 					w.Header().Set("content-type", "text/plain")
 					fmt.Fprintf(w, "403 Missing required scope(s)")
@@ -114,6 +126,22 @@ func validateRequiredJWTScopes(claims JWTTokenClaims, scopes []string) bool {
 	}
 
 	for _, s := range scopes {
+		_, contains := tokenScopes[s]
+		if !contains {
+			return false
+		}
+	}
+
+	return true
+}
+func validateRequiredJWTRoles(claims JWTTokenClaims, roles []string) bool {
+	tokenScopes := map[string]struct{}{}
+
+	for _, s := range claims.Roles {
+		tokenScopes[s] = struct{}{}
+	}
+
+	for _, s := range roles {
 		_, contains := tokenScopes[s]
 		if !contains {
 			return false

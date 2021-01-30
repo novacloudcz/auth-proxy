@@ -15,6 +15,7 @@ func main() {
 	proxyURL := getEnvURL("PROXY_URL")
 	jwksProviderURL := getEnv("JWKS_PROVIDER_URL")
 	requiredJWTScopes := getEnvWithFallback("REQUIRED_JWT_SCOPES", "")
+	requiredJWTRoles := getEnvWithFallback("REQUIRED_JWT_ROLES", "")
 	disableAuthorizationForwarding := getEnvWithFallback("NO_AUTHORIZATION_FORWARDING", "") == "true"
 
 	mux := http.NewServeMux()
@@ -28,9 +29,14 @@ func main() {
 	if requiredJWTScopes != "" {
 		scopesArray = strings.Split(requiredJWTScopes, " ")
 	}
+	rolesArray := []string{}
+	if requiredJWTRoles != "" {
+		rolesArray = strings.Split(requiredJWTRoles, " ")
+	}
 	vOptions := ValidationOptions{
 		jwksProviderURL:   jwksProviderURL,
 		requiredJWTScopes: scopesArray,
+		requiredJWTRoles:  rolesArray,
 	}
 	mux.HandleFunc("/", withValidation(func(w http.ResponseWriter, r *http.Request) {
 		if os.Getenv("DEBUG") != "" {
